@@ -12,6 +12,7 @@ class MLProfile(Model):
     id = IntegerField(primary_key=True)
     input_columns = CharField()
     target_column = CharField()
+    model_name = CharField(default='LinearRegressionModel')
 
     class Meta:
         database = db

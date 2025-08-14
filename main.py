@@ -34,9 +34,11 @@ def create_profile():
         epoch=data['epoch'],
         batch_size=data['batch_size'],
         input_columns=','.join(data['input_columns']),
-        target_column=data['target_column']
+        target_column=data['target_column'],
+        model_name=data['model_name']
     )
     new_profile.save()
+    print('Create Profile:', new_profile.id)
 
     return jsonify({'id': new_profile.id, 'item': data}), 201
 
@@ -57,13 +59,16 @@ def get_profiles():
         } for profile in data
     ]), 200
 
-# @app.route('/items/<int:item_id>', methods=['PUT'])
-# def update_item(item_id):
-#     if 0 <= item_id < len(items):
-#         data = request.get_json()
-#         items[item_id] = data
-#         return jsonify({'id': item_id, 'item': data})
-#     return jsonify({'error': 'Item not found'}), 404
+
+@app.route('/profiles/<string:profile_id>', methods=['PUT'])
+def update_profile(profile_id):
+    data = request.get_json()
+    print('Update Profile:', profile_id, data)
+    query = mlp.MLProfile.update(
+        **data).where(mlp.MLProfile.profile_id == profile_id)
+    if query.execute():
+        return jsonify({'id': profile_id, 'item': data}), 200
+    return jsonify({'error': 'Profile not found'}), 404
 
 
 # @app.route('/items/<int:item_id>', methods=['DELETE'])
