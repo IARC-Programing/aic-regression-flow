@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 import sys
 import importlib
+import pandas as pd
+import os
 
 # fmt:off
 sys.path.append("./classes")
@@ -58,6 +60,28 @@ def get_profiles():
             'target_column': profile.target_column
         } for profile in data
     ]), 200
+
+
+@app.route('/profiles/load-data/<string:profile_id>', methods=['PUT'])
+def load_data(profile_id):
+    data = request.get_json()
+    print('Load Data for Profile:', profile_id, data)
+    query = mlp.MLProfile.select().where(mlp.MLProfile.profile_id == profile_id)
+    query = query.first()
+
+    # Create Folder datasets if it is not exist
+    if not os.path.exists('datasets'):
+        os.makedirs('datasets')
+
+    # Create dataframe from the data
+    df = pd.DataFrame(data)
+
+    # Save the dataframe to a CSV file
+    csv_file_path = f'datasets/{query.id}_data.csv'
+    df.to_csv(csv_file_path, index=False)
+    print('Data loaded and saved to:', csv_file_path)
+
+    return jsonify({'message': 'Data loaded successfully'}), 200
 
 
 @app.route('/profiles/<string:profile_id>', methods=['PUT'])
